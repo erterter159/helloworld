@@ -1,127 +1,182 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Recorder</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
+  <style>
+      .container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+          justify-content: center;
+      }
 
-        h2 {
-            margin-top: 20px;
-        }
+      .box {
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 10px;
+          width: 200px;
+      }
 
-        #record {
-            background-color: red;
-            border: medium solid black;
-            color: white;
-            padding: 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 50%;
-        }
+      .box h3 {
+          margin-top: 0;
+          font-size: 1.2em;
+      }
 
-        #stopRecord {
-            background-color: green;
-            border: medium solid black;
-            color: white;
-            padding: 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 50%;
-            display: none;
-        }
+      .tag-box {
+          display: inline-block;
+          border-radius: 10px;
+          padding: 5px 10px;
+          margin-top: 10px;
+          font-size: 0.8em;
+          width: auto;
+      }
 
-        #recordedAudio {
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <h2>Record</h2>
-    <p>
-        <button id="record"></button>
-        <button id="stopRecord" disabled></button>
-    </p>
-    <p>
-        <audio id="recordedAudio" controls></audio>
-    </p>
+      .tag-box.tool {
+          background-color: #020079; /* Deep blue for 'Tool' tags */
+          color: white;
+      }
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+      .tag-box.convenience {
+          background-color: #add8e6; /* Light blue for 'Convenience' tags */
+      }
+
+      .tag-box.software {
+          background-color: #ccc; /* Gray for other tags */
+      }
+
+      .tag-box.hardware {
+          background-color: black; /* Black for any specific black tags */
+          color: white;
+      }
+
+      .filter {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 20px;
+          justify-content: center;
+      }
+
+      .tag {
+          cursor: pointer;
+          border-radius: 10px;
+          padding: 5px 10px;
+          font-size: 0.8em;
+          user-select: none;
+      }
+
+      .tag.active {
+          box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+          font-size: 0.9em;
+
+      }
+
+      .tag.tool {
+          background-color: #020079; /* Deep blue for 'Tool' tags */
+          color: white;
+      }
+
+      .tag.convenience {
+          background-color: #add8e6; /* Light blue for 'Convenience' tags */
+      }
+
+      .tag.software {
+          background-color: #ccc; /* Gray for 'Software' tags */
+      }
+
+      .tag.hardware {
+          background-color: black; /* Black for 'Hardware' tags */
+          color: white;
+      }
+  </style>
+
+  </head>
+  <body>
+
+    <div class="filter">
+        <div class="tag tool" data-value="tool">Tool</div>
+        <div class="tag hardware" data-value="hardware">Hardware</div>
+        <div class="tag software" data-value="software">Software</div>
+        <div class="tag convenience" data-value="convenience">Convenience</div>
+    </div>
+
+
+      <div class="container">
+          <div class="box" data-tags="tool,hardware">
+              <h3>Small Battery-Powered Amp</h3>
+              <div class="tag-box tool">Tool</div>
+              <div class="tag-box hardware">Hardware</div>
+          </div>
+          <div class="box" data-tags="tool,software">
+              <h3>Practice Sessions Site</h3>
+              <div class="tag-box tool">Tool</div>
+              <div class="tag-box software">Software</div>
+          </div>
+          <div class="box" data-tags="convenience,software">
+              <h3>Jazz User Platform</h3>
+              <div class="tag-box convenience">Convenience</div>
+              <div class="tag-box software">Software</div>
+          </div>
+          <div class="box" data-tags="tool,hardware,software">
+              <h3>Raspberry Pi Multi-Effect Processor</h3>
+              <div class="tag-box tool">Tool</div>
+              <div class="tag-box hardware">Hardware</div>
+              <div class="tag-box software">Software</div>
+          </div>
+          <div class="box" data-tags="tool,software">
+              <h3>Goal Manager</h3>
+              <div class="tag-box tool">Tool</div>
+              <div class="tag-box software">Software</div>
+          </div>
+          <div class="box" data-tags="convenience,software">
+              <h3>Realbook Scraper</h3>
+              <div class="tag-box convenience">Convenience</div>
+              <div class="tag-box software">Software</div>
+          </div>
+          <div class="box" data-tags="tool,hardware,software">
+              <h3>Folding Portable Guitar</h3>
+              <div class="tag-box tool">Tool</div>
+              <div class="tag-box hardware">Hardware</div>
+              <div class="tag-box software">Software</div>
+          </div>
+          <div class="box" data-tags="tool,hardware,software,convenience">
+              <h3>Automatic Guitar Tuner ESP32</h3>
+              <div class="tag-box tool">Tool</div>
+              <div class="tag-box hardware">Hardware</div>
+              <div class="tag-box software">Software</div>
+              <div class="tag-box convenience">Convenience</div>
+          </div>
+          <div class="box" data-tags="tool,software,convenience">
+              <h3>Specialized Notebook</h3>
+              <div class="tag-box tool">Tool</div>
+              <div class="tag-box software">Software</div>
+              <div class="tag-box convenience">Convenience</div>
+          </div>
+      </div>
+
+
     <script>
-        let rec;
-        let audioChunks = [];
+      const tagElements = document.querySelectorAll('.tag');
+      const boxes = document.querySelectorAll('.box');
 
-        const recordButton = document.getElementById("record");
-        const stopRecordButton = document.getElementById("stopRecord");
-        const recordedAudio = document.getElementById("recordedAudio");
+      function filterBoxes() {
+          const activeTags = Array.from(tagElements)
+              .filter(tag => tag.classList.contains('active'))
+              .map(tag => tag.getAttribute('data-value'));
 
-        recordButton.onclick = () => {
-            recordButton.disabled = true;
-            stopRecordButton.style.display = "inline-block";
-            stopRecordButton.disabled = false;
-            recordButton.style.backgroundColor = "blue";
-            audioChunks = [];
+          boxes.forEach(box => {
+              const boxTags = box.getAttribute('data-tags').split(',');
+              const shouldShow = activeTags.length === 0 || activeTags.every(tag => boxTags.includes(tag));
+              box.style.display = shouldShow ? 'block' : 'none';
+          });
+      }
 
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    rec = new MediaRecorder(stream);
-                    rec.ondataavailable = e => {
-                        audioChunks.push(e.data);
-                    };
-                    rec.start();
-                })
-                .catch(err => {
-                    console.error("Error accessing the microphone:", err);
-                });
-        };
+      tagElements.forEach(tag => {
+          tag.addEventListener('click', function() {
+              this.classList.toggle('active');
+              filterBoxes();
+          });
+      });
 
-        stopRecordButton.onclick = () => {
-            stopRecordButton.disabled = true;
-            recordButton.disabled = false;
-            recordButton.style.backgroundColor = "red";
-            stopRecordButton.style.backgroundColor = "green";
-            rec.stop();
-            rec.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                const audioUrl = URL.createObjectURL(audioBlob);
-                recordedAudio.src = audioUrl;
-
-                // Convert to MP3 using lamejs
-                const reader = new FileReader();
-                reader.onload = function () {
-                    const wavData = new Int8Array(this.result);
-                    const encoder = new lamejs.Mp3Encoder(1, 44100, 128);
-                    const mp3Data = [];
-                    const samples = wavData.length / 2;
-
-                    for (let i = 0; i < samples; i++) {
-                        const left = wavData[i * 2];
-                        const right = wavData[i * 2 + 1];
-                        const mp3buf = encoder.encodeBuffer(left, right);
-                        if (mp3buf.length > 0) {
-                            mp3Data.push(new Int8Array(mp3buf));
-                        }
-                    }          
-
-                    const mp3Blob = new Blob(mp3Data, { type: 'audio/mp3' });
-
-                    // Save MP3 file to a specific folder
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    const url = window.URL.createObjectURL(mp3Blob);
-                    a.href = url;
-                    a.download = 'recorded.mp3';
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                };
-                reader.readAsArrayBuffer(audioBlob);
-            };
-        };
     </script>
 </body>
 </html>
