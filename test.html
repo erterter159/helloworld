@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Recorder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 20px;
+        }
+
+        #record {
+            background-color: red;
+            border: medium solid black;
+            color: white;
+            padding: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #stopRecord {
+            background-color: green;
+            border: medium solid black;
+            color: white;
+            padding: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: none;
+        }
+
+        #recordedAudio {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Record</h2>
+    <p>
+        <button id="record"></button>
+        <button id="stopRecord" disabled></button>
+    </p>
+    <p>
+        <audio id="recordedAudio" controls></audio>
+    </p>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+    <script>
+        let rec;
+        let audioChunks = [];
+
+        const recordButton = document.getElementById("record");
+        const stopRecordButton = document.getElementById("stopRecord");
+        const recordedAudio = document.getElementById("recordedAudio");
+
+        recordButton.onclick = () => {
+            recordButton.disabled = true;
+            stopRecordButton.style.display = "inline-block";
+            stopRecordButton.disabled = false;
+            recordButton.style.backgroundColor = "blue";
+            audioChunks = [];
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    rec = new MediaRecorder(stream);
+                    rec.ondataavailable = e => {
+                        audioChunks.push(e.data);
+                    };
+                    rec.start();
+                })
+                .catch(err => {
+                    console.error("Error accessing the microphone:", err);
+                });
+        };
+
+        stopRecordButton.onclick = () => {
+            stopRecordButton.disabled = true;
+            recordButton.disabled = false;
+            recordButton.style.backgroundColor = "red";
+            stopRecordButton.style.backgroundColor = "green";
+            rec.stop();
+            rec.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                recordedAudio.src = audioUrl;
+
+                // Convert to MP3 using lamejs
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const wavData = new Int8Array(this.result);
+                    const encoder = new lamejs.Mp3Encoder(1, 44100, 128);
+                    const mp3Data = [];
+                    const samples = wavData.length / 2;
+
+                    for (let i = 0; i < samples; i++) {
+                        const left = wavData[i * 2];
+                        const right = wavData[i * 2 + 1];
+                        const mp3buf = encoder.encodeBuffer(left, right);
+                        if (mp3buf.length > 0) {
+                            mp3Data.push(new Int8Array(mp3buf));
+                        }
+                    }          
+
+                    const mp3Blob = new Blob(mp3Data, { type: 'audio/mp3' });
+
+                    // Save MP3 file to a specific folder
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    const url = window.URL.createObjectURL(mp3Blob);
+                    a.href = url;
+                    a.download = 'recorded.mp3';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                };
+                reader.readAsArrayBuffer(audioBlob);
+            };
+        };
+    </script>
+</body>
+</html>
