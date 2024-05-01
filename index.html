@@ -1,182 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <style>
-      .container {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 20px;
-          justify-content: center;
-      }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draggable Grid</title>
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns for 2 groups */
+    gap: 10px;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+  }
+  .item {
+    width: 100px;
+    height: 150px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    text-align: center;
+    cursor: pointer;
+  }
+  img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 5px;
+  }
+</style>
+</head>
+<body>
+<div class="grid">
+  <!-- Columns will be dynamically created here -->
+</div>
 
-      .box {
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          padding: 20px;
-          margin: 10px;
-          width: 200px;
-      }
+<script>
+  // Fetch the JSON data
+  fetch("a.json")
+    .then(response => response.json())
+    .then(data => {
+      // Create columns dynamically based on the groups in the JSON
+      Object.keys(data).forEach(group => {
+        var column = document.createElement('div');
+        column.classList.add('column');
+        column.dataset.group = group;
+        column.setAttribute('ondrop', `drop(event, '${group}')`);
+        column.setAttribute('ondragover', 'allowDrop(event)');
+        document.querySelector('.grid').appendChild(column);
 
-      .box h3 {
-          margin-top: 0;
-          font-size: 1.2em;
-      }
+        // Populate each column with images
+        data[group].forEach((image, index) => {
+          var itemElement = document.createElement('div');
+          itemElement.classList.add('item');
+          itemElement.draggable = true;
+          itemElement.addEventListener('dragstart', drag);
+          itemElement.dataset.index = index;
 
-      .tag-box {
-          display: inline-block;
-          border-radius: 10px;
-          padding: 5px 10px;
-          margin-top: 10px;
-          font-size: 0.8em;
-          width: auto;
-      }
+          var imgElement = document.createElement('img');
+          // Update image source to be relative to the server's root directory
+          imgElement.src = image;
+          imgElement.alt = `${group} Image ${index + 1}`;
 
-      .tag-box.tool {
-          background-color: #020079; /* Deep blue for 'Tool' tags */
-          color: white;
-      }
-
-      .tag-box.convenience {
-          background-color: #add8e6; /* Light blue for 'Convenience' tags */
-      }
-
-      .tag-box.software {
-          background-color: #ccc; /* Gray for other tags */
-      }
-
-      .tag-box.hardware {
-          background-color: black; /* Black for any specific black tags */
-          color: white;
-      }
-
-      .filter {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 20px;
-          justify-content: center;
-      }
-
-      .tag {
-          cursor: pointer;
-          border-radius: 10px;
-          padding: 5px 10px;
-          font-size: 0.8em;
-          user-select: none;
-      }
-
-      .tag.active {
-          box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
-          font-size: 0.9em;
-
-      }
-
-      .tag.tool {
-          background-color: #020079; /* Deep blue for 'Tool' tags */
-          color: white;
-      }
-
-      .tag.convenience {
-          background-color: #add8e6; /* Light blue for 'Convenience' tags */
-      }
-
-      .tag.software {
-          background-color: #ccc; /* Gray for 'Software' tags */
-      }
-
-      .tag.hardware {
-          background-color: black; /* Black for 'Hardware' tags */
-          color: white;
-      }
-  </style>
-
-  </head>
-  <body>
-
-    <div class="filter">
-        <div class="tag tool" data-value="tool">Tool</div>
-        <div class="tag hardware" data-value="hardware">Hardware</div>
-        <div class="tag software" data-value="software">Software</div>
-        <div class="tag convenience" data-value="convenience">Convenience</div>
-    </div>
-
-
-      <div class="container">
-          <div class="box" data-tags="tool,hardware">
-              <h3>Small Battery-Powered Amp</h3>
-              <div class="tag-box tool">Tool</div>
-              <div class="tag-box hardware">Hardware</div>
-          </div>
-          <div class="box" data-tags="tool,software">
-              <h3>Practice Sessions Site</h3>
-              <div class="tag-box tool">Tool</div>
-              <div class="tag-box software">Software</div>
-          </div>
-          <div class="box" data-tags="convenience,software">
-              <h3>Jazz User Platform</h3>
-              <div class="tag-box convenience">Convenience</div>
-              <div class="tag-box software">Software</div>
-          </div>
-          <div class="box" data-tags="tool,hardware,software">
-              <h3>Raspberry Pi Multi-Effect Processor</h3>
-              <div class="tag-box tool">Tool</div>
-              <div class="tag-box hardware">Hardware</div>
-              <div class="tag-box software">Software</div>
-          </div>
-          <div class="box" data-tags="tool,software">
-              <h3>Goal Manager</h3>
-              <div class="tag-box tool">Tool</div>
-              <div class="tag-box software">Software</div>
-          </div>
-          <div class="box" data-tags="convenience,software">
-              <h3>Realbook Scraper</h3>
-              <div class="tag-box convenience">Convenience</div>
-              <div class="tag-box software">Software</div>
-          </div>
-          <div class="box" data-tags="tool,hardware,software">
-              <h3>Folding Portable Guitar</h3>
-              <div class="tag-box tool">Tool</div>
-              <div class="tag-box hardware">Hardware</div>
-              <div class="tag-box software">Software</div>
-          </div>
-          <div class="box" data-tags="tool,hardware,software,convenience">
-              <h3>Automatic Guitar Tuner ESP32</h3>
-              <div class="tag-box tool">Tool</div>
-              <div class="tag-box hardware">Hardware</div>
-              <div class="tag-box software">Software</div>
-              <div class="tag-box convenience">Convenience</div>
-          </div>
-          <div class="box" data-tags="tool,software,convenience">
-              <h3>Specialized Notebook</h3>
-              <div class="tag-box tool">Tool</div>
-              <div class="tag-box software">Software</div>
-              <div class="tag-box convenience">Convenience</div>
-          </div>
-      </div>
-
-
-    <script>
-      const tagElements = document.querySelectorAll('.tag');
-      const boxes = document.querySelectorAll('.box');
-
-      function filterBoxes() {
-          const activeTags = Array.from(tagElements)
-              .filter(tag => tag.classList.contains('active'))
-              .map(tag => tag.getAttribute('data-value'));
-
-          boxes.forEach(box => {
-              const boxTags = box.getAttribute('data-tags').split(',');
-              const shouldShow = activeTags.length === 0 || activeTags.every(tag => boxTags.includes(tag));
-              box.style.display = shouldShow ? 'block' : 'none';
-          });
-      }
-
-      tagElements.forEach(tag => {
-          tag.addEventListener('click', function() {
-              this.classList.toggle('active');
-              filterBoxes();
-          });
+          itemElement.appendChild(imgElement);
+          column.appendChild(itemElement);
+        });
       });
+    })
+    .catch(error => console.error('Error fetching JSON:', error));
 
-    </script>
+  var draggedItem = null;
+
+  function allowDrop(event) {
+    event.preventDefault();
+  }
+
+  function drag(event) {
+    draggedItem = event.target;
+  }
+
+  function drop(event, group) {
+    event.preventDefault();
+    var targetColumn = event.target.closest('.column');
+    var targetGroup = targetColumn.dataset.group;
+
+    if (targetGroup !== group) {
+      var targetIndex = parseInt(draggedItem.dataset.index);
+      var targetGroupItems = Array.from(targetColumn.querySelectorAll('.item'));
+      var targetItemIndex = Array.from(targetGroupItems).indexOf(event.target);
+
+      if (targetItemIndex === -1) {
+        // If dropped on empty space, append the item
+        targetColumn.appendChild(draggedItem);
+      } else {
+        // Otherwise, insert the item at the appropriate index
+        if (targetIndex > targetItemIndex) {
+          targetColumn.insertBefore(draggedItem, targetGroupItems[targetItemIndex]);
+        } else {
+          targetColumn.insertBefore(draggedItem, targetGroupItems[targetItemIndex + 1]);
+        }
+      }
+    }
+  }
+</script>
+
+
+
 </body>
 </html>
